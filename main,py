@@ -1,0 +1,39 @@
+import socket
+import threading
+
+def ipgen():
+    for a in range(0, 256):
+        for b in range(0, 256):
+            for c in range(0, 256):
+                for d in range(0, 256):
+                    ip = str(a) + '.' + str(b) + '.' + str(c) + '.' + str(d)
+                    yield ip
+
+scanned = []
+working = []
+def scan(ip):
+    if ip in scanned:
+        return
+    else:
+        scanned.append(ip)
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(5)
+        s.connect((ip, 25565))
+        print(str(ip) + ' is open')
+        open(file='workingips', mode='w').write(ip + ':25565\n')
+        working.append(ip)
+        s.close()
+    except:
+        return
+
+threads = []
+
+for ip in ipgen():
+    if len(threads) > 5000:
+        for thread in threads:
+            thread.join()
+        threads = []
+    thread = threading.Thread(target=scan, args=(ip,))
+    thread.start()
+    threads.append(thread)
